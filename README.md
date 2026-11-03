@@ -332,9 +332,7 @@ Day2/
 
 ## Day 2 backend setup
 
-We use **`uv`** and **`fastapi dev`**, same as the [FastAPI docs](https://fastapi.tiangolo.com/).
-
-Do this from a **new terminal**.
+We use **`uv`** and **`fastapi dev`**.
 
 ### Step 0 — Install `uv`
 
@@ -342,21 +340,13 @@ Do this from a **new terminal**.
 uv --version
 ```
 
-If that fails:
-
-**Windows (PowerShell):**
-
-```powershell
-irm https://astral.sh/uv/install.ps1 | iex
-```
-
-**Mac:**
+If `uv` is not installed:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+pip install uv
 ```
 
-Close and reopen the terminal. Check again: `uv --version`.
+Then check again: `uv --version`.
 
 ### Step 1 — Go to the backend folder
 
@@ -366,27 +356,23 @@ Run commands **here**, so FastAPI can find `main.py`.
 cd Day2/backend
 ```
 
-### Step 2 — Add FastAPI (from the official docs)
+### Step 2 — Add FastAPI
 
-Put `"fastapi[standard]"` in quotes so it works in all terminals.
+Put `"fastapi[standard]"` in quotes.
 
 ```bash
 uv add "fastapi[standard]"
 ```
 
-This lab also needs Groq and `.env` support:
-
 ```bash
 uv add groq python-dotenv
 ```
 
-`uv` creates `.venv` and installs the packages. You do not need to activate it.
-
-| Package              | Why you need it                         |
-|----------------------|-----------------------------------------|
-| `fastapi[standard]`  | FastAPI plus the `fastapi` command      |
-| `groq`               | Calls the model                         |
-| `python-dotenv`      | Loads `API_KEY` from `.env`             |
+| Package              | Why you need it                    |
+|----------------------|------------------------------------|
+| `fastapi[standard]`  | FastAPI plus the `fastapi` command |
+| `groq`               | Calls the model                    |
+| `python-dotenv`      | Loads `API_KEY` from `.env`        |
 
 ### Step 3 — Add `.env` in the backend folder
 
@@ -410,7 +396,7 @@ cp ../../Day1/.env .env
 copy ..\..\Day1\.env .env
 ```
 
-The file must sit next to `main.py` (or in the folder where you start the server).
+Keep `.env` next to `main.py`.
 
 ### Step 4 — Start the backend
 
@@ -420,8 +406,6 @@ Still in `Day2/backend`:
 uv run fastapi dev
 ```
 
-This finds `main.py`, starts the app, and reloads when you save.
-
 Leave this terminal **open**. The server is at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 Open these in your browser to check:
@@ -430,9 +414,7 @@ Open these in your browser to check:
 - [http://localhost:8000/docs](http://localhost:8000/docs) → FastAPI’s try-it page
 - [http://localhost:8000/chat/hello](http://localhost:8000/chat/hello) → `{"response":"..."}` from Groq
 
-If `/home` works, FastAPI is up. If `/chat/hello` works, the **agent is linked**.
-
-To stop the server later: click that terminal and press `Ctrl + C`.
+To stop the server: `Ctrl + C`.
 
 ---
 
@@ -481,20 +463,11 @@ def chat(user_prompt: str):
 4. Groq replies
 5. FastAPI sends JSON: `{"response": "..."}`
 
-### Change the agent, not the URL
+Keep the route `/chat/{user_prompt}` so the frontend still works.
 
-Students: keep the route name `/chat/{user_prompt}` if you can.
+You can change the system prompt, model, tools, or history.
 
-Then any frontend that already calls `/chat/...` will still work.
-
-You **may** change:
-
-- The system prompt (add it as a first message in the list)
-- The model name
-- Tools
-- How you store conversation history
-
-Example: add a system prompt (memory of the agent’s job):
+Example system prompt:
 
 ```python
 @app.get("/chat/{user_prompt}")
@@ -506,8 +479,6 @@ def chat(user_prompt: str):
     response = generate_response(messages)
     return {"response": response}
 ```
-
-If you want **full conversation history** like Day 1, keep a list in Python (or send the list from the frontend). Start simple: one user message per request is enough for this lab.
 
 ---
 
@@ -534,9 +505,9 @@ app.add_middleware(
 )
 ```
 
-`allow_origins=["*"]` means any local page can call the API. That is fine for a workshop.
+`allow_origins=["*"]` lets the local page call the API.
 
-**Do not remove CORS** or the frontend will fail with a browser error, even if `/chat/hello` works in the address bar.
+If you remove CORS, the frontend will fail even when `/chat/hello` works in the browser.
 
 ---
 
@@ -562,11 +533,8 @@ and reads:
 
 ### Step 2 — Open the HTML file
 
-Do **not** use FastAPI to serve the page unless you want to. For this lab:
-
 1. In VS Code, right-click `Day2/index.html`
-2. Open with a browser  
-   or install the **Live Server** extension and click **Go Live**
+2. Open with a browser, or use the **Live Server** extension
 
 The page uses:
 
@@ -591,11 +559,9 @@ If you see **Could not reach the API**:
 
 ## Build your own frontend with AI
 
-The backend is ready. The UI is yours.
+Keep the same API so any page can plug in.
 
-**Keep the same API.** Then you can plug any page in.
-
-### API contract (do not change this if you want an easy plug-in)
+### API contract
 
 | Item        | Value                                      |
 |-------------|--------------------------------------------|
@@ -674,7 +640,7 @@ If the new UI calls `/chat/...` and reads `response`, it will work with **no bac
 | `ModuleNotFoundError` | Activate `.venv`, then install packages again |
 | Code does not run in VS Code | Code Runner + Run In Terminal + Save Before Run |
 | Empty / bad API key | Check `.env` has `API_KEY=...` |
-| `uv` / `fastapi` not found | Install `uv`, then `uv add "fastapi[standard]"` in `Day2/backend` |
+| `uv` / `fastapi` not found | `pip install uv`, then `uv add "fastapi[standard]"` in `Day2/backend` |
 | `/home` fails | You are not in `Day2/backend`, or server is not running |
 | `/chat` fails, `/home` works | `.env` missing, or Groq key / network |
 | Frontend cannot reach API | Backend running? CORS on? `API_BASE` = `http://localhost:8000` |
@@ -708,7 +674,7 @@ python3 --version
 
 1. Try `python3 --version`
 2. If missing: `brew install python` or install from python.org
-3. Use `python3` and `pip3` for this workshop
+3. Use `python3` and `pip3`
 
 ---
 
@@ -776,7 +742,7 @@ On Windows permission errors: run VS Code as Administrator, then activate and in
 
 | What you see | What to do |
 |--------------|------------|
-| `uv: command not found` | Install `uv` (Step 0) and reopen the terminal |
+| `uv: command not found` | `pip install uv`, then run `uv --version` |
 | `fastapi` command missing | From `Day2/backend` run `uv add "fastapi[standard]"` (keep the quotes) |
 | `No module named services` | Run `uv run fastapi dev` from `Day2/backend`, not from the repo root |
 | Port already in use | Stop the other server, or change `API_BASE` if you use another port |
