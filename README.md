@@ -332,52 +332,63 @@ Day2/
 
 ## Day 2 backend setup
 
-Do this from a **new terminal**. Keep Day 1 closed if you want a clean start. You can reuse the same Python.
+We use **`uv`** and **`fastapi dev`**, same as the [FastAPI docs](https://fastapi.tiangolo.com/).
+
+Do this from a **new terminal**.
+
+### Step 0 — Install `uv`
+
+```bash
+uv --version
+```
+
+If that fails:
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://astral.sh/uv/install.ps1 | iex
+```
+
+**Mac:**
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Close and reopen the terminal. Check again: `uv --version`.
 
 ### Step 1 — Go to the backend folder
 
-This folder is important. Run commands **here**, so Python can find `services.groq_llm`.
+Run commands **here**, so FastAPI can find `main.py`.
 
 ```bash
 cd Day2/backend
 ```
 
-### Step 2 — Create and activate a virtual environment
+### Step 2 — Add FastAPI (from the official docs)
 
-**Windows:**
-
-```bash
-python -m venv .venv
-source .venv/Scripts/activate
-```
-
-(Command Prompt activate: `.venv\Scripts\activate`)
-
-**Mac:**
+Put `"fastapi[standard]"` in quotes so it works in all terminals.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+uv add "fastapi[standard]"
 ```
 
-You should see `(.venv)`.
-
-### Step 3 — Install backend packages
+This lab also needs Groq and `.env` support:
 
 ```bash
-pip install fastapi uvicorn groq python-dotenv
+uv add groq python-dotenv
 ```
 
-Mac if needed: `pip3 install fastapi uvicorn groq python-dotenv`
+`uv` creates `.venv` and installs the packages. You do not need to activate it.
 
-| Package         | Why you need it                          |
-|-----------------|------------------------------------------|
-| `fastapi`       | Builds the API                           |
-| `uvicorn`       | Runs the API server                      |
-| `groq`          | Calls the model                          |
-| `python-dotenv` | Loads `API_KEY` from `.env`              |
+| Package              | Why you need it                         |
+|----------------------|-----------------------------------------|
+| `fastapi[standard]`  | FastAPI plus the `fastapi` command      |
+| `groq`               | Calls the model                         |
+| `python-dotenv`      | Loads `API_KEY` from `.env`             |
 
-### Step 4 — Add `.env` in the backend folder
+### Step 3 — Add `.env` in the backend folder
 
 Create `Day2/backend/.env` (same key as Day 1):
 
@@ -401,15 +412,17 @@ copy ..\..\Day1\.env .env
 
 The file must sit next to `main.py` (or in the folder where you start the server).
 
-### Step 5 — Start the backend
+### Step 4 — Start the backend
 
-Still in `Day2/backend` with `(.venv)` on:
+Still in `Day2/backend`:
 
 ```bash
-uvicorn main:app --reload --port 8000
+uv run fastapi dev
 ```
 
-Leave this terminal **open**. The server is running.
+This finds `main.py`, starts the app, and reloads when you save.
+
+Leave this terminal **open**. The server is at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 Open these in your browser to check:
 
@@ -545,7 +558,7 @@ and reads:
 
 ### Step 1 — Keep the backend running
 
-`uvicorn` must stay on in `Day2/backend`.
+`uv run fastapi dev` must stay running in `Day2/backend`.
 
 ### Step 2 — Open the HTML file
 
@@ -561,7 +574,7 @@ The page uses:
 const API_BASE = "http://localhost:8000";
 ```
 
-If you change the uvicorn port, change this line too.
+If you start the server on another port, change this line too.
 
 ### Step 3 — Send a message
 
@@ -633,7 +646,7 @@ Then:
 1. Save the AI’s HTML over `Day2/index.html` (or a new file)
 2. Keep `API_BASE` as `http://localhost:8000`
 3. Open the file in the browser
-4. Keep uvicorn running
+4. Keep `uv run fastapi dev` running
 
 If the new UI calls `/chat/...` and reads `response`, it will work with **no backend change**.
 
@@ -661,7 +674,7 @@ If the new UI calls `/chat/...` and reads `response`, it will work with **no bac
 | `ModuleNotFoundError` | Activate `.venv`, then install packages again |
 | Code does not run in VS Code | Code Runner + Run In Terminal + Save Before Run |
 | Empty / bad API key | Check `.env` has `API_KEY=...` |
-| `uvicorn` not found | `pip install fastapi uvicorn` inside `.venv` |
+| `uv` / `fastapi` not found | Install `uv`, then `uv add "fastapi[standard]"` in `Day2/backend` |
 | `/home` fails | You are not in `Day2/backend`, or server is not running |
 | `/chat` fails, `/home` works | `.env` missing, or Groq key / network |
 | Frontend cannot reach API | Backend running? CORS on? `API_BASE` = `http://localhost:8000` |
@@ -716,7 +729,8 @@ pip install groq python-dotenv
 **Day 2:**
 
 ```bash
-pip install fastapi uvicorn groq python-dotenv
+uv add "fastapi[standard]"
+uv add groq python-dotenv
 ```
 
 6. In VS Code: `Ctrl/Cmd + Shift + P` → **Python: Select Interpreter** → pick `.venv`
@@ -731,7 +745,7 @@ On Windows permission errors: run VS Code as Administrator, then activate and in
 2. Settings → search **code runner**
 3. Enable **Run In Terminal** and **Save File Before Run**
 4. Activate `.venv` in the integrated terminal
-5. Or run from the terminal yourself (`python lab1.py` or `uvicorn main:app --reload`)
+5. Or run from the terminal yourself (`python lab1.py` or `uv run fastapi dev` in `Day2/backend`)
 
 ---
 
@@ -758,20 +772,21 @@ On Windows permission errors: run VS Code as Administrator, then activate and in
 
 ---
 
-## 6. FastAPI / uvicorn problems (Day 2)
+## 6. FastAPI / `uv` problems (Day 2)
 
 | What you see | What to do |
 |--------------|------------|
-| `uvicorn: command not found` | Activate `.venv`, then `pip install uvicorn fastapi` |
-| `No module named services` | Start uvicorn from `Day2/backend`, not from the repo root |
-| Port already in use | Use `--port 8001` and change `API_BASE` in the HTML |
-| Reload errors after you edit | Save the file; uvicorn restarts by itself (`--reload`) |
+| `uv: command not found` | Install `uv` (Step 0) and reopen the terminal |
+| `fastapi` command missing | From `Day2/backend` run `uv add "fastapi[standard]"` (keep the quotes) |
+| `No module named services` | Run `uv run fastapi dev` from `Day2/backend`, not from the repo root |
+| Port already in use | Stop the other server, or change `API_BASE` if you use another port |
+| Reload after you edit | Save the file; `fastapi dev` reloads on its own |
 
 ---
 
 ## 7. Frontend cannot talk to the backend
 
-1. Is uvicorn running? Open [http://localhost:8000/home](http://localhost:8000/home)
+1. Is `uv run fastapi dev` running? Open [http://localhost:8000/home](http://localhost:8000/home)
 2. Does CORS still exist in `main.py`?
 3. Is `API_BASE` exactly `http://localhost:8000` (no extra slash issues in your fetch URL)?
 4. Did you encode the message? Use `encodeURIComponent(msg)`
